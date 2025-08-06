@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "bajaj-finserv-hackathon-468017",
+  "private_key_id": "5c524f36fc3974052f2a54efa3edf8794c470807",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCu8UFDV/Ae39aG\nEwz0FKhrNvoQfyAS43f1j7ZhOCDcl83b1WZlMczKJkzOvrBiA7aKMfOzspmkEbMb\na7pUej/9rU66av6BZ5EQAGbqCNly3laMD8KTlGWoFImhnjGKOl8ToYZTtGOKvh9V\ns1lw+8b9dXb7ydZKAcPJvdhvqxWprOoKZA/Pq3mesY+ifSdz5LpG20q95kPq59xy\nSBthN8/afJN3kYb52ybjK5c+G9B1knwbbJlsgRTgDDQljF8B2bWI8d1ibJfeyPZI\njZBKClAB+GyLH18Y1CppJsP5PjnNIH2PAUQRKW+essMvsMByzH9OD/lQaQqB0k5H\nukvFQU5NAgMBAAECggEAIJhRV12TXwFILF9wzqpprd5Grduty28n6vAtpEQLtWYw\nZCkI5MpoVHLZ5Tx4yy5TbMC9Xiok/8GPfEiwZSyI7zhC/q9QP6afC9rzUeA3ubQM\n7phCIfKolS5MbXk21EEndVYnW8G0uUVOu85ImClFLHTeKDA1VcEp7FULtlSrWttO\nia7g2Xw8NO4Rt4PgPzdMrkiea7ieA9Oo91qj42sj9/POqic63Zw3CukIvgUDO41O\nUZfXXg3HHr6ILYn7y70B5Ak9nJoE7Q8Wyurx/LswgFV6wwruQnek2+wnUd/UwV3G\nwKg5hl/lgNAZ2UzlYbVbgidUXS7QA0BGFWvXPmTMkQKBgQDjN1r58s42aio5rsEN\nKGMXZ8v6QtkFjJgdIAioyyioVT652tAFZQYR7KzKqlZnN3owQlZhdwYnOiqZIzrY\nl3nOkyjo6pK2aKK8dpKCMS3jHVlynJbMh9yzu+iYgD7Vwk/Uu+o/xZ40P2DyZyGA\nRh19O0pYnyHrNKuor6a5sWWJUQKBgQDFGqd16CmpIltI8QM6B2vQTRAV9xCf4jcY\nwMS/02MIcr1EuAHtKCW8nlB5NVAIUxs9RiuWj5+PrTHl+pg7wl/o82x0JNY/d7Cg\nA782S0dKTipFmYa8qpk6nDgJpRLarK+rGG68f3c2ePvlpVPpCTipHjeT/MOqsnw0\nKyivLXC2PQKBgQCu2Oopba9CMHBN8yyb83hNipJtAwP+QTLNNtlzCuM+plqeqsNp\nY1RIdtiBHJNg2lAs0t+mIPGbPieJsJKYGfih/px8oAZGWD7iyFv10+J74xnyGI3y\n1pn/tZpHwGiaFe1Yx0J70Jbtndf8sWAWVd5bgES17b8sQFvYc1LZkqmQAQKBgCK3\nQh2DSasvkPJ0+MOEwRmMKTQlMvlmJ5wlf8HlooC/bNSosDYsJxFktPnUSQdeU+Lj\n9BNtsoXk1HAURjHoV2o5TbXbMx00oJhecJRIiALvZ4SguNmMFrb7Aue3+m0nkz1I\nbWCn9sBSaNOW3gOiiydGWjWnhHMRQs0RePX5w+tlAoGAfykWQZazKmkCEHyP8FNk\nzKdoyKq7fknN8x08JWur5kJQ9WK2Xfa5jIc1RBFE3bTe2TcHsY7WG+y1RTWnojzy\nA1/zFI+XUKrenCt+kj5PTrTNpVa9EufmvKtL7QkKRbG3GapNTN9XOAb+mSNJwd//\nlaWUqPIu4Zc1f9vFbE6ZOmE=\n-----END PRIVATE KEY-----\n",
+  "client_email": "hackathon-bf@bajaj-finserv-hackathon-468017.iam.gserviceaccount.com",
+  "client_id": "103505343755764825475",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/hackathon-bf%40bajaj-finserv-hackathon-468017.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
