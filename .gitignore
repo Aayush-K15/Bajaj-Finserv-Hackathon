@@ -120,7 +120,10 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
+.env.local
+.env.*.local
+.env.production
+.env.development
 .venv
 env/
 venv/
@@ -169,25 +172,21 @@ cython_debug/
 *.json
 !requirements.json
 !package.json
+!package-lock.json
 credentials.json
-*-hackathon-*.json
-*-finserv-*.json
 
 # Authentication tokens and pickles
 *.pickle
 *_token.pickle
 token.pickle
 default_token.pickle
-*CSA_token.pickle
-*_CSA_token.pickle
 
-# Project-specific credential patterns
-*-hackathon-*.json
-*-finserv-*.json
-*-project-*.json
-*_hackathon_*.json
-*_finserv_*.json
-*_project_*.json
+# Project-specific credential patterns (use variables from .env)
+# These patterns will catch files like: project-name-12345-hash.json
+*-*-*-*.json        # Service account files with project-id-hash pattern
+*-*-*.json          # Files with project-env pattern
+*_*_*.json          # Underscore separated files
+*_CSA_*.pickle      # CSA token files
 
 # JSON key files and credentials
 *.key

@@ -9,6 +9,78 @@ from vectorstore import store
 from vertexai.preview.generative_models import GenerativeModel
 import vertexai
 
+def clean_json_string(json_str: str) -> str:
+    """
+    Clean and prepare JSON string for parsing.
+    """
+    # Remove markdown code blocks
+    if json_str.startswith("```json"):
+        json_str = json_str[7:]
+    if json_str.startswith("```"):
+        json_str = json_str[3:]
+    if json_str.endswith("```"):
+        json_str = json_str[:-3]
+    
+    # Remove any leading/trailing whitespace
+    json_str = json_str.strip()
+    
+    # Fix common JSON formatting issues
+    # Remove trailing commas before closing braces/brackets
+    json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
+    
+    return json_str
+def extract_first_json(text: str) -> dict:
+    """
+    Extract the first valid JSON object from text, handling incomplete JSON gracefully.
+    """
+    # First try to find a complete JSON object using brace counting
+    brace_count = 0
+    start = None
+    for i, char in enumerate(text):
+        if char == '{':
+            if brace_count == 0:
+                start = i
+            brace_count += 1
+        elif char == '}':
+            brace_count -= 1
+            if brace_count == 0 and start is not None:
+                candidate = text[start:i+1]
+                try:
+                    return json.loads(candidate)
+                except json.JSONDecodeError:
+                    continue
+    
+    # If no complete JSON found, try to fix common truncation issues
+    if start is not None:
+        # Try to complete the JSON by adding missing closing braces
+        remaining_text = text[start:]
+        open_braces = remaining_text.count('{')
+        close_braces = remaining_text.count('}')
+        missing_braces = open_braces - close_braces
+        
+        if missing_braces > 0:
+            # Try adding missing closing braces
+            completed_json = remaining_text + '}' * missing_braces
+            try:
+                return json.loads(completed_json)
+            except json.JSONDecodeError:
+                pass
+        
+        # Try to extract partial JSON up to the last valid field
+        lines = remaining_text.split('\n')
+        for i in range(len(lines) - 1, 0, -1):
+            partial_json = '\n'.join(lines[:i])
+            # Remove trailing commas and add closing brace
+            partial_json = re.sub(r',\s*$', '', partial_json.strip())
+            if not partial_json.endswith('}'):
+                partial_json += '}'
+            try:
+                return json.loads(partial_json)
+            except json.JSONDecodeError:
+                continue
+    
+    return None
+
 # Initialize Vertex AI
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "bajaj-finserv-hackathon-468017-5c524f36fc39.json"
 vertexai.init(
@@ -16,7 +88,7 @@ vertexai.init(
     location="us-central1" 
 )
 
-model = GenerativeModel("gemini-2.5-flash")
+model = GenerativeModel("gemini-2.5-pro")
 
 def parse_query_structure(query: str) -> Dict[str, Any]:
     """
@@ -319,68 +391,101 @@ JSON:
 
     # Generate response using Gemini
     try:
-        response = model.generate_content(prompt)
+        response = model.generate_content(
+            prompt,
+            generation_config={
+                "temperature": 0.0,
+                "top_p": 1.0,
+                "top_k": 1,
+                "max_output_tokens": 2048
+            }
+        )
         response_text = response.text.strip()
-        
+
         # Parse the response to extract ANSWER and JSON parts
         if "ANSWER:" in response_text and "JSON:" in response_text:
             # Split the response
             parts = response_text.split("JSON:", 1)
             direct_answer = parts[0].replace("ANSWER:", "").strip()
-            json_part = parts[1].strip()
-            
-            # Clean JSON part
-            if json_part.startswith("```json"):
-                json_part = json_part[7:]
-            if json_part.startswith("```"):
-                json_part = json_part[3:]
-            if json_part.endswith("```"):
-                json_part = json_part[:-3]
-            json_part = json_part.strip()
-            
-            # Parse JSON
+            json_part = clean_json_string(parts[1])
+
+            # Attempt safe JSON parse, with fallback using brace-counting extraction
             try:
                 result = json.loads(json_part)
                 result["direct_answer"] = direct_answer
-            except json.JSONDecodeError:
-                result = {
-                    "direct_answer": direct_answer,
-                    "error": "Failed to parse JSON part",
-                    "raw_json": json_part
-                }
+            except json.JSONDecodeError as e:
+                # Try the enhanced JSON extraction
+                parsed_json = extract_first_json(json_part)
+                if parsed_json:
+                    parsed_json["direct_answer"] = direct_answer
+                    result = parsed_json
+                else:
+                    # Last resort: try to extract key information manually
+                    result = {
+                        "direct_answer": direct_answer,
+                        "decision": "Information",
+                        "amount": "Not Available",
+                        "confidence": "Medium",
+                        "summary": f"Response processed successfully but JSON parsing failed: {str(e)[:100]}",
+                        "justification": [
+                            {
+                                "clause": "Manual parsing required",
+                                "source": "system",
+                                "page": "N/A",
+                                "relevance": "System extracted direct answer from response"
+                            }
+                        ],
+                        "additional_requirements": ["Manual review of response"],
+                        "exclusions_checked": [],
+                        "_parsing_error": str(e),
+                        "_raw_json_preview": json_part[:500] + "..." if len(json_part) > 500 else json_part
+                    }
         else:
             # Fallback to old parsing method
-            if response_text.startswith("```json"):
-                response_text = response_text[7:]
-            if response_text.startswith("```"):
-                response_text = response_text[3:]
-            if response_text.endswith("```"):
-                response_text = response_text[:-3]
-            response_text = response_text.strip()
-            
+            response_text = clean_json_string(response_text)
+
             try:
                 result = json.loads(response_text)
                 result["direct_answer"] = "Please check the detailed analysis below."
-            except json.JSONDecodeError:
-                result = {
-                    "direct_answer": "Unable to process the response.",
-                    "error": "Failed to parse response",
-                    "raw": response.text
-                }
-        
+            except json.JSONDecodeError as e:
+                parsed_json = extract_first_json(response_text)
+                if parsed_json:
+                    parsed_json["direct_answer"] = "Please check the detailed analysis below."
+                    result = parsed_json
+                else:
+                    result = {
+                        "direct_answer": "Response generated but JSON parsing failed.",
+                        "decision": "Information",
+                        "amount": "Not Available",
+                        "confidence": "Low",
+                        "summary": f"System response was generated but could not be parsed as JSON: {str(e)[:100]}",
+                        "justification": [
+                            {
+                                "clause": "System generated response but parsing failed",
+                                "source": "system",
+                                "page": "N/A",
+                                "relevance": "Technical issue with response format"
+                            }
+                        ],
+                        "additional_requirements": ["Manual review of response"],
+                        "exclusions_checked": [],
+                        "_parsing_error": str(e),
+                        "_raw_response_preview": response_text[:500] + "..." if len(response_text) > 500 else response_text
+                    }
+
         # Add metadata about query processing
         result["_metadata"] = {
             "structured_query": structured_query,
             "enhanced_search": not bool(context),
             "chunks_used": len(final_chunks) if not context else "direct_context"
         }
-        
+
     except Exception as e:
         result = {
             "direct_answer": "An error occurred while processing your query.",
-            "error": "Failed to generate or parse response", 
+            "error": "Failed to generate or parse response",
             "exception": str(e),
             "structured_query": structured_query
         }
-    
+
     return result
