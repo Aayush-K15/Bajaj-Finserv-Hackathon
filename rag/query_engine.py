@@ -1,13 +1,9 @@
-
-
-
 import os
 import re
 import json
 from typing import Dict, List, Any
 from vectorstore import store
-from vertexai.preview.generative_models import GenerativeModel
-import vertexai
+import groq
 
 def clean_json_string(json_str: str) -> str:
     """
@@ -29,6 +25,7 @@ def clean_json_string(json_str: str) -> str:
     json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
     
     return json_str
+
 def extract_first_json(text: str) -> dict:
     """
     Extract the first valid JSON object from text, handling incomplete JSON gracefully.
@@ -81,14 +78,9 @@ def extract_first_json(text: str) -> dict:
     
     return None
 
-# Initialize Vertex AI
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "bajaj-finserv-hackathon-468017-5c524f36fc39.json"
-vertexai.init(
-    project="bajaj-finserv-hackathon-468017",
-    location="us-central1" 
-)
-
-model = GenerativeModel("gemini-2.5-pro")
+# Initialize Groq client
+groq_api_key = "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"
+client = groq.Groq(api_key=groq_api_key)
 
 def parse_query_structure(query: str) -> Dict[str, Any]:
     """
@@ -302,6 +294,7 @@ def answer_query(query: str, context: str = None) -> dict:
     """
     # Parse and structure the query
     structured_query = parse_query_structure(query)
+    final_chunks = []  # Initialize final_chunks
     
     if context:
         # Use provided context directly (for email/attachment content)
@@ -389,18 +382,26 @@ JSON:
                 "structured_query": structured_query
             }
 
-    # Generate response using Gemini
+    # Generate response using Groq
     try:
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "temperature": 0.0,
-                "top_p": 1.0,
-                "top_k": 1,
-                "max_output_tokens": 2048
-            }
+        # Use Groq's chat completion API
+        response = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an insurance policy assistant with expertise in claims processing and policy interpretation. Provide clear, accurate answers based on the provided context."
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            model="llama3-70b-8192",  # Using Llama 3 70B model
+            temperature=0.0,
+            max_tokens=2048,
+            top_p=1.0
         )
-        response_text = response.text.strip()
+        response_text = response.choices[0].message.content.strip()
 
         # Parse the response to extract ANSWER and JSON parts
         if "ANSWER:" in response_text and "JSON:" in response_text:
@@ -477,7 +478,7 @@ JSON:
         result["_metadata"] = {
             "structured_query": structured_query,
             "enhanced_search": not bool(context),
-            "chunks_used": len(final_chunks) if not context else "direct_context"
+            "chunks_used": len(final_chunks) if final_chunks else "direct_context"
         }
 
     except Exception as e:

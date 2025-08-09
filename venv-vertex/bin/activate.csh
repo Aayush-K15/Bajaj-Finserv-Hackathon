@@ -9,17 +9,17 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 # Unset irrelevant variables.
 deactivate nondestructive
 
-setenv VIRTUAL_ENV "/Users/aayushkapoor/git_repos/Bajaj Finserv Hackathon/venv-vertex"
+setenv VIRTUAL_ENV /Users/lakshitsachdeva/Desktop/Projects/Bajaj-Finserv-Hackathon/venv-vertex
 
 set _OLD_VIRTUAL_PATH="$PATH"
-setenv PATH "$VIRTUAL_ENV/bin:$PATH"
+setenv PATH "$VIRTUAL_ENV/"bin":$PATH"
+setenv VIRTUAL_ENV_PROMPT venv-vertex
 
 
 set _OLD_VIRTUAL_PROMPT="$prompt"
 
 if (! "$?VIRTUAL_ENV_DISABLE_PROMPT") then
-    set prompt = "(venv-vertex) $prompt"
-    setenv VIRTUAL_ENV_PROMPT "(venv-vertex) "
+    set prompt = "("venv-vertex") $prompt:q"
 endif
 
 alias pydoc python -m pydoc
